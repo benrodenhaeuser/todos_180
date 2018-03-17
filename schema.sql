@@ -5,7 +5,7 @@ CREATE TABLE lists(
 
 CREATE TABLE todos(
   id serial PRIMARY KEY,
-  task text NOT NULL,
+  name text NOT NULL,
   completed boolean NOT NULL DEFAULT false,
-  list_id integer NOT NULL REFERENCES lists (id)
+  list_id integer NOT NULL REFERENCES lists (id) ON DELETE CASCADE
 );

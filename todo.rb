@@ -3,7 +3,10 @@ require "sinatra/reloader"
 require "sinatra/content_for"
 require "tilt/erubis"
 
-require_relative "session_persistence"
+require_relative "lib/db_connection"
+require_relative "lib/db_persistence"
+
+use DBConnection
 
 configure do
   enable :sessions
@@ -52,7 +55,6 @@ def load_list(id)
   halt
 end
 
-# Return an error message if the name is invalid. Return nil if name is valid.
 def error_for_list_name(name)
   if !(1..100).cover? name.size
     "List name must be between 1 and 100 characters."
@@ -61,7 +63,6 @@ def error_for_list_name(name)
   end
 end
 
-# Return an error message if the name is invalid. Return nil if name is valid.
 def error_for_todo(name)
   if !(1..100).cover? name.size
     "Todo must be between 1 and 100 characters."
@@ -69,7 +70,7 @@ def error_for_todo(name)
 end
 
 before do
-  @storage = SessionPersistence.new(session)
+  @storage = DatabasePersistence.new(env['dbconnection'])
 end
 
 get "/" do
@@ -169,7 +170,7 @@ post "/lists/:list_id/todos/:id/destroy" do
   @list = load_list(@list_id)
 
   todo_id = params[:id].to_i
-  @storage.delete_todo(@list_id, todo_id)
+  @storage.delete_todo(todo_id)
 
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     status 204
@@ -187,7 +188,7 @@ post "/lists/:list_id/todos/:id" do
   todo_id = params[:id].to_i
   is_completed = params[:completed] == "true"
 
-  @storage.update_todo(@list_id, todo_id, is_completed)
+  @storage.update_todo(todo_id, is_completed)
 
   session[:success] = "The todo has been updated."
   redirect "/lists/#{@list_id}"
