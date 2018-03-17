@@ -1,6 +1,6 @@
 CREATE TABLE lists(
   id serial PRIMARY KEY,
-  name text UNIQUE NOT NULL
+  name text NOT NULL UNIQUE 
 );
 
 CREATE TABLE todos(
