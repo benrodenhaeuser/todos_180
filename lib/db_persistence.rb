@@ -10,17 +10,61 @@ class DatabasePersistence
   end
 
   def all_lists
-    db_lists = query("SELECT * FROM lists")
-    db_todos = query("SELECT * FROM todos")
+    sql = <<~SQL
+        SELECT lists.id,
+               lists.name,
+               count(todos.id) AS todos_count,
+               count(nullif(todos.completed, true)) AS incomplete_todos_count
+          FROM lists
+          JOIN todos
+            ON lists.id = todos.list_id
+      GROUP BY lists.id
+      ORDER BY lists.name;
+    SQL
 
-    in_app_format(db_lists, db_todos)
+    query(sql).map do |list|
+      {
+        id: list['id'].to_i,
+        name: list['name'],
+        todos_count: list['todos_count'].to_i,
+        incomplete_todos_count: list['incomplete_todos_count'].to_i
+      }
+    end
   end
 
   def find_list(id)
-    db_list = query("SELECT * FROM lists WHERE id = $1", id)
-    db_todos = query("SELECT * FROM todos WHERE list_id = $1", id)
+    sql = <<~SQL
+        SELECT lists.id,
+               lists.name,
+               count(todos.id) AS todos_count,
+               count(nullif(todos.completed, true)) AS incomplete_todos_count
+          FROM lists
+          JOIN todos
+            ON lists.id = todos.list_id
+         WHERE lists.id = $1
+      GROUP BY lists.id
+      ORDER BY lists.name;
+    SQL
 
-    in_app_format(db_list, db_todos).first
+    list_tuple = query(sql, id).first
+
+    todo_tuples = query("SELECT * FROM todos WHERE list_id = $1", id)
+
+    todos = todo_tuples.map do |todo|
+      {
+        id: todo['id'].to_i,
+        name: todo['name'],
+        completed: todo['completed'] == 't'
+      }
+    end
+
+    {
+      id: list_tuple['id'].to_i,
+      name: list_tuple['name'],
+      todos_count: list_tuple['todos_count'].to_i,
+      incomplete_todos_count: list_tuple['incomplete_todos_count'].to_i,
+      todos: todos
+    }
   end
 
   def create_list(list_name)
@@ -78,26 +122,5 @@ class DatabasePersistence
       "UPDATE todos SET completed = true where list_id = $1",
       list_id
     )
-  end
-
-  private
-
-  def in_app_format(db_lists, db_todos)
-    todos = db_todos.map do |todo|
-      {
-        id: todo['id'].to_i,
-        name: todo['name'],
-        completed: todo['completed'] == 't',
-        list_id: todo['list_id'].to_i
-      }
-    end
-
-    db_lists.map do |list|
-      {
-        id: list['id'].to_i,
-        name: list['name'],
-        todos: todos.select { |todo| todo[:list_id] == list['id'].to_i }
-      }
-    end
   end
 end
