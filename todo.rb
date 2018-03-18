@@ -1,6 +1,4 @@
 require "sinatra"
-require "sinatra/reloader"
-
 require "sinatra/content_for"
 require "tilt/erubis"
 
@@ -13,6 +11,11 @@ configure do
   enable :sessions
   set :session_secret, 'secret'
   set :erb, :escape_html => true
+end
+
+configure(:development) do
+  require "sinatra/reloader"
+  also_reload "./lib/db_persistence.rb"
 end
 
 helpers do
@@ -71,7 +74,7 @@ def error_for_todo(name)
 end
 
 before do
-  @storage = DatabasePersistence.new(env['dbconnection'])
+  @storage = DatabasePersistence.new(env['dbconnection'], logger)
 end
 
 get "/" do

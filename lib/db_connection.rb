@@ -6,10 +6,13 @@ class DBConnection
   end
 
   def call(env)
-    env['dbconnection'] = PG.connect(dbname: 'todos')
+    env['dbconnection'] =
+      if Sinatra::Base.production?
+        PG.connect(ENV['DATABASE_URL'])
+      else
+        PG.connect(dbname: 'todos')
+      end
 
-    status, headers, body = @app.call(env)
-
-    [status, headers, body]
+    @app.call(env)
   end
 end
