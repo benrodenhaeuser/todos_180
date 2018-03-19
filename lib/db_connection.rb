@@ -3,6 +3,7 @@ require 'pg'
 class DBConnection
   def initialize(app)
     @app = app
+    self.class.setup unless self.class.db
   end
 
   def call(env)
@@ -10,8 +11,9 @@ class DBConnection
   end
 
   class << self
-
-    attr_reader :db
+    def db
+      @db
+    end
 
     def setup
       @db =
@@ -22,6 +24,4 @@ class DBConnection
         end
     end
   end
-
-  setup
 end
