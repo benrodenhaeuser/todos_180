@@ -65,7 +65,6 @@ end
 
 before do
   @storage = env['db']
-  # @storage = DatabasePersistence.new(env['db'], logger)
 end
 
 get "/" do

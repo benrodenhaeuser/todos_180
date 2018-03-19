@@ -1,11 +1,14 @@
 class DBPersistence
   def initialize(connection)
     @db = connection
-    # @logger = logger
+  end
+
+  def log(logger)
+    @logger = logger
   end
 
   def query(statement, *params)
-    # @logger.info "#{statement}: #{params}"
+    @logger.info "#{statement}: #{params}"
     @db.exec_params(statement, params)
   end
 
