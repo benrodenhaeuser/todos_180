@@ -22,14 +22,7 @@ class DatabasePersistence
       ORDER BY lists.name;
     SQL
 
-    query(sql).map do |list|
-      {
-        id: list['id'].to_i,
-        name: list['name'],
-        todos_count: list['todos_count'].to_i,
-        incomplete_todos_count: list['incomplete_todos_count'].to_i
-      }
-    end
+    query(sql).map { |list_tuple| tuple_to_list_hash(list_tuple) }
   end
 
   def find_list(id)
@@ -47,8 +40,15 @@ class DatabasePersistence
     SQL
 
     list_tuple = query(sql, id).first
+    tuple_to_list_hash(list_tuple)
+  end
 
-    todo_tuples = query("SELECT * FROM todos WHERE list_id = $1", id)
+  def todos_for_list(id)
+    todo_tuples =
+      query(
+        "SELECT * FROM todos WHERE list_id = $1",
+        id
+      )
 
     todos = todo_tuples.map do |todo|
       {
@@ -57,14 +57,6 @@ class DatabasePersistence
         completed: todo['completed'] == 't'
       }
     end
-
-    {
-      id: list_tuple['id'].to_i,
-      name: list_tuple['name'],
-      todos_count: list_tuple['todos_count'].to_i,
-      incomplete_todos_count: list_tuple['incomplete_todos_count'].to_i,
-      todos: todos
-    }
   end
 
   def create_list(list_name)
@@ -122,5 +114,16 @@ class DatabasePersistence
       "UPDATE todos SET completed = true where list_id = $1",
       list_id
     )
+  end
+
+  private
+
+  def tuple_to_list_hash(list_tuple)
+    {
+      id: list_tuple['id'].to_i,
+      name: list_tuple['name'],
+      todos_count: list_tuple['todos_count'].to_i,
+      incomplete_todos_count: list_tuple['incomplete_todos_count'].to_i
+    }
   end
 end
