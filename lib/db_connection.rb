@@ -4,7 +4,6 @@ require_relative 'db_persistence'
 class DBConnection
   def initialize(app)
     @app = app
-    @db = DBPersistence.new(db_connection)
   end
 
   def db_connection
@@ -16,8 +15,9 @@ class DBConnection
   end
 
   def call(env)
-    @db.log(env['rack.logger'])
-    env['db'] = @db
+    db = DBPersistence.new(db_connection)
+    db.log(env['rack.logger'])
+    env['db'] = db
 
     @app.call(env)
   end
