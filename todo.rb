@@ -64,7 +64,8 @@ def error_for_todo(name)
 end
 
 before do
-  @storage = DatabasePersistence.new(env['db'], logger)
+  @storage = env['db']
+  # @storage = DatabasePersistence.new(env['db'], logger)
 end
 
 get "/" do

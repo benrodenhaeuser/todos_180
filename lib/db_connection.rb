@@ -1,18 +1,19 @@
 require 'pg'
+require_relative 'db_persistence'
 
 class DBConnection
   def initialize(app)
     @app = app
-    @db = setup_db
+    @db = DBPersistence.new(db_connection)
   end
 
-  def setup_db
+  def db_connection
     if ENV["RACK_ENV"] == 'production'
       PG.connect(ENV['DATABASE_URL'])
     else
       PG.connect(dbname: 'todos')
     end
-  end 
+  end
 
   def call(env)
     env['db'] = @db
