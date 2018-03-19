@@ -60,13 +60,11 @@ def error_for_list_name(name)
 end
 
 def error_for_todo(name)
-  if !(1..100).cover? name.size
-    "Todo must be between 1 and 100 characters."
-  end
+  "Todo must be between 1 and 100 characters." unless (1..100).cover? name.size
 end
 
 before do
-  @storage = DatabasePersistence.new(env['dbconnection'], logger)
+  @storage = DatabasePersistence.new(logger)
 end
 
 get "/" do

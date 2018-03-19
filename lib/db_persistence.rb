@@ -1,6 +1,8 @@
+require_relative 'db_connection'
+
 class DatabasePersistence
-  def initialize(connection, logger)
-    @db = connection
+  def initialize(logger)
+    @db = DBConnection.db
     @logger = logger
   end
 
@@ -39,8 +41,9 @@ class DatabasePersistence
       ORDER BY lists.name;
     SQL
 
-    list_tuple = query(sql, id).first
-    tuple_to_list_hash(list_tuple)
+    tuple_to_list_hash(
+      query(sql, id).first
+    )
   end
 
   def todos_for_list(id)
@@ -75,9 +78,9 @@ class DatabasePersistence
 
   def update_list(id, name)
     query(
-      "UPDATE lists SET name = $2 WHERE id = $1",
-      id,
-      name
+      "UPDATE lists SET name = $1 WHERE id = $2",
+      name,
+      id
     )
   end
 
@@ -88,9 +91,9 @@ class DatabasePersistence
 
   def add_todo(list_id, content)
     query(
-      "INSERT INTO todos (name, list_id) VALUES ($2, $1)",
-      list_id,
-      content
+      "INSERT INTO todos (name, list_id) VALUES ($1, $2)",
+      content,
+      list_id
     )
   end
 
@@ -103,9 +106,9 @@ class DatabasePersistence
 
   def update_todo(todo_id, completed_status)
     query(
-      "UPDATE todos SET completed = $2 where id = $1",
-      todo_id,
-      completed_status
+      "UPDATE todos SET completed = $1 where id = $2",
+      completed_status,
+      todo_id
     )
   end
 
