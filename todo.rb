@@ -43,7 +43,7 @@ helpers do
 end
 
 def load_list(id)
-  list = @storage.find_list(id)
+  list = storage.find_list(id)
   return list if list
 
   session[:error] = "The specified list was not found."
@@ -54,7 +54,7 @@ end
 def error_for_list_name(name)
   if !(1..100).cover? name.size
     "List name must be between 1 and 100 characters."
-  elsif @storage.all_lists.any? { |list| list[:name] == name }
+  elsif storage.all_lists.any? { |list| list[:name] == name }
     "List name must be unique."
   end
 end
@@ -63,8 +63,8 @@ def error_for_todo(name)
   "Todo must be between 1 and 100 characters." unless (1..100).cover? name.size
 end
 
-before do
-  @storage = env['db']
+def storage
+  env['db']
 end
 
 get "/" do
@@ -73,7 +73,7 @@ end
 
 # View list of lists
 get "/lists" do
-  @lists = @storage.all_lists
+  @lists = storage.all_lists
   erb :lists, layout: :layout
 end
 
@@ -91,7 +91,7 @@ post "/lists" do
     session[:error] = error
     erb :new_list, layout: :layout
   else
-    @storage.create_list(list_name)
+    storage.create_list(list_name)
     session[:success] = "The list has been created."
     redirect "/lists"
   end
@@ -101,7 +101,7 @@ end
 get "/lists/:id" do
   @list_id = params[:id].to_i
   @list = load_list(@list_id)
-  @todos = @storage.todos_for_list(@list_id)
+  @todos = storage.todos_for_list(@list_id)
   erb :list, layout: :layout
 end
 
@@ -124,7 +124,7 @@ post "/lists/:id" do
     session[:error] = error
     erb :edit_list, layout: :layout
   else
-    @storage.update_list(id, new_list_name)
+    storage.update_list(id, new_list_name)
     session[:success] = "The list has been updated."
     redirect "/lists/#{id}"
   end
@@ -133,7 +133,7 @@ end
 # Delete a todo list
 post "/lists/:id/destroy" do
   id = params[:id].to_i
-  @storage.delete_list(id)
+  storage.delete_list(id)
   session[:success] = "The list has been deleted."
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     "/lists"
@@ -153,7 +153,7 @@ post "/lists/:list_id/todos" do
     session[:error] = error
     erb :list, layout: :layout
   else
-    @storage.add_todo(@list_id, text)
+    storage.add_todo(@list_id, text)
     session[:success] = "The todo was added."
     redirect "/lists/#{@list_id}"
   end
@@ -165,7 +165,7 @@ post "/lists/:list_id/todos/:id/destroy" do
   @list = load_list(@list_id)
 
   todo_id = params[:id].to_i
-  @storage.delete_todo(todo_id)
+  storage.delete_todo(todo_id)
 
   if env["HTTP_X_REQUESTED_WITH"] == "XMLHttpRequest"
     status 204
@@ -183,7 +183,7 @@ post "/lists/:list_id/todos/:id" do
   todo_id = params[:id].to_i
   is_completed = params[:completed] == "true"
 
-  @storage.update_todo(todo_id, is_completed)
+  storage.update_todo(todo_id, is_completed)
 
   session[:success] = "The todo has been updated."
   redirect "/lists/#{@list_id}"
@@ -194,7 +194,7 @@ post "/lists/:id/complete_all" do
   @list_id = params[:id].to_i
   @list = load_list(@list_id)
 
-  @storage.complete_all_todos(@list_id)
+  storage.complete_all_todos(@list_id)
 
   session[:success] = "All todos have been completed."
   redirect "/lists/#{@list_id}"
