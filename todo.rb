@@ -3,7 +3,6 @@ require "sinatra/content_for"
 require "tilt/erubis"
 
 require_relative "lib/db_connection"
-require_relative "lib/db_persistence"
 
 use DBConnection
 
