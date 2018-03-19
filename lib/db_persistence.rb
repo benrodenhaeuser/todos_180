@@ -43,9 +43,7 @@ class DBPersistence
         ORDER BY lists.name;
     SQL
 
-    tuple_to_list_hash(
-      query(sql, id).first
-    )
+    tuple_to_list_hash(query(sql, id).first)
   end
 
   def todos_for_list(id)
