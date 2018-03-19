@@ -1,8 +1,6 @@
-require_relative 'db_connection'
-
 class DatabasePersistence
-  def initialize(logger)
-    @db = DBConnection.db
+  def initialize(connection, logger)
+    @db = connection
     @logger = logger
   end
 
