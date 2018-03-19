@@ -17,7 +17,8 @@ class DBConnection
 
   def call(env)
     @db.log(env['rack.logger'])
-    env['db'] = @db
+    env['db'] = @dv
+    
     @app.call(env)
   end
 end

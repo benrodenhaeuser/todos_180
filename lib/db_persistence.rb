@@ -5,6 +5,7 @@ class DBPersistence
 
   def log(logger)
     @logger = logger
+    self
   end
 
   def query(statement, *params)
@@ -14,15 +15,15 @@ class DBPersistence
 
   def all_lists
     sql = <<~SQL
-        SELECT lists.id,
-               lists.name,
-               count(todos.id) AS todos_count,
-               count(nullif(todos.completed, true)) AS incomplete_todos_count
-          FROM lists
-          JOIN todos
-            ON lists.id = todos.list_id
-      GROUP BY lists.id
-      ORDER BY lists.name;
+          SELECT lists.id,
+                 lists.name,
+                 count(todos.id) AS todos_count,
+                 count(nullif(todos.completed, true)) AS incomplete_todos_count
+            FROM lists
+       LEFT JOIN todos
+              ON lists.id = todos.list_id
+        GROUP BY lists.id
+        ORDER BY lists.name;
     SQL
 
     query(sql).map { |list_tuple| tuple_to_list_hash(list_tuple) }
@@ -30,16 +31,16 @@ class DBPersistence
 
   def find_list(id)
     sql = <<~SQL
-        SELECT lists.id,
-               lists.name,
-               count(todos.id) AS todos_count,
-               count(nullif(todos.completed, true)) AS incomplete_todos_count
-          FROM lists
-          JOIN todos
-            ON lists.id = todos.list_id
-         WHERE lists.id = $1
-      GROUP BY lists.id
-      ORDER BY lists.name;
+          SELECT lists.id,
+                 lists.name,
+                 count(todos.id) AS todos_count,
+                 count(nullif(todos.completed, true)) AS incomplete_todos_count
+            FROM lists
+       LEFT JOIN todos
+              ON lists.id = todos.list_id
+           WHERE lists.id = $1
+        GROUP BY lists.id
+        ORDER BY lists.name;
     SQL
 
     tuple_to_list_hash(
