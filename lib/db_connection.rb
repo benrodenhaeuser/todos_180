@@ -3,7 +3,7 @@ require 'pg'
 class DBConnection
   def initialize(app)
     @app = app
-    self.class.setup unless self.class.db
+    self.class.setup
   end
 
   def call(env)
