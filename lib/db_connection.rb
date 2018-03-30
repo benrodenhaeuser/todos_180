@@ -21,8 +21,8 @@ class DBConnection
   def call(env)
     db_connection = db_connect
     env['storage'] = db_wrap(db_connection, env)
-    status, headers, body = @app.call(env)
+    response = @app.call(env)
     db_connection.close
-    [status, headers, body]
+    response
   end
 end

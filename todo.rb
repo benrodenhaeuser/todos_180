@@ -7,7 +7,7 @@ require_relative "lib/db_connection"
 use DBConnection
 
 def storage
-  env['storage'] # provided by DBConnection middleware
+  env['storage']
 end
 
 configure do
