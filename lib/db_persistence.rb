@@ -1,10 +1,6 @@
 class DBPersistence
-  def initialize(connection)
-    @db = connection
-  end
-
-  def log(logger)
-    @logger = logger
+  def initialize(db, logger)
+    @db, @logger = db, logger
   end
 
   def query(statement, *params)

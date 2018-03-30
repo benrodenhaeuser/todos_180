@@ -6,6 +6,10 @@ require_relative "lib/db_connection"
 
 use DBConnection
 
+def storage
+  env['storage'] # provided by DBConnection middleware
+end
+
 configure do
   enable :sessions
   set :session_secret, 'secret'
@@ -60,10 +64,6 @@ end
 
 def error_for_todo(name)
   "Todo must be between 1 and 100 characters." unless (1..100).cover? name.size
-end
-
-def storage
-  env['db']
 end
 
 get "/" do

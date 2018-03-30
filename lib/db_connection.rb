@@ -14,16 +14,15 @@ class DBConnection
     end
   end
 
+  def db_wrap(db_connection, env)
+    DBPersistence.new(db_connection, env['rack.logger'])
+  end
+
   def call(env)
     db_connection = db_connect
-    db_persistence = DBPersistence.new(db_connection)
-    db_persistence.log(env['rack.logger'])
-    env['db'] = db_persistence
-
+    env['storage'] = db_wrap(db_connection, env)
     status, headers, body = @app.call(env)
-
     db_connection.close
-
     [status, headers, body]
   end
 end
