@@ -6,7 +6,7 @@ class DBConnection
     @app = app
   end
 
-  def db_connection
+  def db_connect
     if ENV["RACK_ENV"] == 'production'
       PG.connect(ENV['DATABASE_URL'])
     else
@@ -15,10 +15,15 @@ class DBConnection
   end
 
   def call(env)
-    db = DBPersistence.new(db_connection)
-    db.log(env['rack.logger'])
-    env['db'] = db
+    db_connection = db_connect
+    db_persistence = DBPersistence.new(db_connection)
+    db_persistence.log(env['rack.logger'])
+    env['db'] = db_persistence
 
-    @app.call(env)
+    status, headers, body = @app.call(env)
+
+    db_connection.close
+
+    [status, headers, body]
   end
 end

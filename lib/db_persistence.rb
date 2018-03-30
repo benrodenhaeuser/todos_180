@@ -5,7 +5,6 @@ class DBPersistence
 
   def log(logger)
     @logger = logger
-    self
   end
 
   def query(statement, *params)
